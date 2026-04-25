@@ -362,6 +362,54 @@
             }
         </style>
 
+        {{-- Arabic digit conversion + MathJax for math expressions (√ ∫ fractions powers) --}}
+        <script>
+            let arabicApplied = false;
+
+            function convertToArabicNumbers(str) {
+                const d = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+                return str.replace(/[0-9]/g, w => d[+w]);
+            }
+
+            function applyArabicNumbers() {
+                if (arabicApplied) return;
+                arabicApplied = true;
+                const skip = new Set(['SCRIPT','STYLE','NOSCRIPT','TEXTAREA','INPUT','SELECT','BUTTON','PRE','CODE']);
+                const walker = document.createTreeWalker(
+                    document.body, NodeFilter.SHOW_TEXT,
+                    { acceptNode: node => {
+                        let el = node.parentElement;
+                        while (el) {
+                            if (skip.has(el.tagName) || el.closest('mjx-container')) return NodeFilter.FILTER_REJECT;
+                            el = el.parentElement;
+                        }
+                        return NodeFilter.FILTER_ACCEPT;
+                    }}
+                );
+                const nodes = [];
+                let n;
+                while (n = walker.nextNode()) nodes.push(n);
+                nodes.forEach(n => { n.nodeValue = convertToArabicNumbers(n.nodeValue); });
+            }
+
+            window.MathJax = {
+                tex: {
+                    inlineMath: [['\\(', '\\)']],
+                    displayMath: [['\\[', '\\]']]
+                },
+                options: {
+                    skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'input', 'select']
+                },
+                startup: {
+                    ready() {
+                        MathJax.startup.defaultReady();
+                        MathJax.startup.promise.then(() => applyArabicNumbers());
+                    }
+                }
+            };
+        </script>
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
         @stack('head')
     </head>
     <body>
@@ -475,6 +523,9 @@
                 if (window.lucide) {
                     window.lucide.createIcons();
                 }
+
+                // Fallback: if MathJax fails to load, still convert digits after 1.5s
+                setTimeout(applyArabicNumbers, 1500);
 
                 document.querySelectorAll('[data-lb-tab]').forEach((button) => {
                     button.addEventListener('click', () => {
