@@ -44,14 +44,19 @@ class HomeController extends Controller
             }
         }
 
+        $completedCount    = auth()->check() ? auth()->user()->lessonProgress()->count() : 0;
+        $totalLessonsCount = Lesson::where('is_published', true)->count();
+
         return view('welcome', [
             'leaderboard' => [
                 'first'  => $this->getLeaderboardFor('first'),
                 'second' => $this->getLeaderboardFor('second'),
             ],
-            'featuredSubjects' => $featuredSubjects,
-            'topLessons'       => $topLessons,
-            'lastLesson'       => $lastLesson,
+            'featuredSubjects'  => $featuredSubjects,
+            'topLessons'        => $topLessons,
+            'lastLesson'        => $lastLesson,
+            'completedCount'    => $completedCount,
+            'totalLessonsCount' => $totalLessonsCount,
         ]);
     }
 
