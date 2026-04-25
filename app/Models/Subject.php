@@ -40,4 +40,9 @@ class Subject extends Model
     {
         return $this->hasMany(Lesson::class);
     }
+
+    public function units(): HasMany
+    {
+        return $this->hasMany(Unit::class);
+    }
 }

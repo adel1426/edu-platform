@@ -71,14 +71,14 @@ class LessonResource extends Resource
                             ->columnSpanFull(),
                     ])->columns(2),
 
-                Forms\Components\Section::make('نظام التحفيز والحالة')
+                Forms\Components\Section::make('النقاط والحالة')
                     ->schema([
                         Forms\Components\TextInput::make('points_reward')
-                            ->label('نقاط المكافأة عند الإكمال')
+                            ->label('نقاط المكافأة')
                             ->numeric()
                             ->default(10)
                             ->minValue(0)
-                            ->prefix('★'),
+                            ->prefix('🏆'),
 
                         Forms\Components\Toggle::make('is_published')
                             ->label('نشر الدرس')
@@ -106,6 +106,19 @@ class LessonResource extends Resource
                     ->label('عنوان الدرس')
                     ->searchable(),
 
+                Tables\Columns\TextColumn::make('slug')
+                    ->label('Slug')
+                    ->copyable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('public_url')
+                    ->label('الرابط العام')
+                    ->state(fn (Lesson $record): string => route('lessons.show', $record->slug))
+                    ->limit(40)
+                    ->tooltip(fn (Lesson $record): string => route('lessons.show', $record->slug))
+                    ->copyable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('points_reward')
                     ->label('النقاط')
                     ->badge()
@@ -129,6 +142,13 @@ class LessonResource extends Resource
                     ->label('الحالة'),
             ])
             ->actions([
+                Tables\Actions\Action::make('view')
+                    ->label('عرض الدرس')
+                    ->icon('heroicon-o-eye')
+                    ->url(fn (Lesson $record): string => route('lessons.show', $record->slug))
+                    ->openUrlInNewTab()
+                    ->color('gray')
+                    ->visible(fn (Lesson $record): bool => (bool) $record->is_published),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])

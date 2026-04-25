@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Auth;
 
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Pages\Auth\EditProfile as BaseEditProfile;
@@ -23,7 +24,15 @@ class EditProfile extends BaseEditProfile
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
 
-TextInput::make('password')
+                Select::make('grade_level')
+                    ->label('المرحلة الدراسية')
+                    ->options([
+                        'first' => 'الأول متوسط',
+                        'second' => 'الثاني متوسط',
+                    ])
+                    ->placeholder('اختيار المرحلة'),
+
+                TextInput::make('password')
                     ->label('كلمة المرور الجديدة')
                     ->password()
                     ->revealable()

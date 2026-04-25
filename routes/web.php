@@ -1,15 +1,21 @@
 <?php
 
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LessonController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SubjectController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', HomeController::class)->name('home');
+
+Route::get('/subjects', [SubjectController::class, 'index'])->name('subjects.index');
+Route::get('/subjects/{slug}', [SubjectController::class, 'show'])->name('subjects.show');
+Route::get('/lessons', [LessonController::class, 'index'])->name('lessons.index');
+Route::get('/lessons/{slug}', [LessonController::class, 'show'])->name('lessons.show');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware('auth')->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

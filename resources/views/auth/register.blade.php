@@ -9,11 +9,21 @@
             <x-input-error :messages="$errors->get('name')" class="mt-2" />
         </div>
 
-        <!-- Email Address -->
+        <!-- Username -->
         <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <x-input-label for="username" :value="__('Username')" />
+            <x-text-input id="username" class="block mt-1 w-full" type="text" name="username" :value="old('username')" required autocomplete="username" />
+            <x-input-error :messages="$errors->get('username')" class="mt-2" />
+        </div>
+
+        <div class="mt-4">
+            <x-input-label for="grade_level" :value="'المرحلة الدراسية'" />
+            <select id="grade_level" name="grade_level" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                <option value="">اختيار المرحلة</option>
+                <option value="first" @selected(old('grade_level') === 'first')>الأول متوسط</option>
+                <option value="second" @selected(old('grade_level') === 'second')>الثاني متوسط</option>
+            </select>
+            <x-input-error :messages="$errors->get('grade_level')" class="mt-2" />
         </div>
 
         <!-- Password -->

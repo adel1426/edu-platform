@@ -4,26 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class Lesson extends Model
 {
-    /**
-     * السماح بالإدخال الجماعي لجميع الحقول (ما عدا id).
-     */
     protected $guarded = ['id'];
 
-    /**
-     * تحويل أنواع الحقول تلقائياً.
-     */
     protected $casts = [
         'is_published' => 'boolean',
         'points_reward' => 'integer',
+        'views_count'   => 'integer',
     ];
 
-    /**
-     * توليد slug تلقائياً إذا لم يُقدَّم.
-     */
     protected static function booted(): void
     {
         static::creating(function (Lesson $lesson): void {
@@ -33,9 +26,6 @@ class Lesson extends Model
         });
     }
 
-    /**
-     * علاقة الدرس بالمادة التي ينتمي إليها.
-     */
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
@@ -44,5 +34,10 @@ class Lesson extends Model
     public function unit(): BelongsTo
     {
         return $this->belongsTo(Unit::class);
+    }
+
+    public function progress(): HasMany
+    {
+        return $this->hasMany(LessonProgress::class);
     }
 }
