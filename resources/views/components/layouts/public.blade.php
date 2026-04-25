@@ -364,23 +364,24 @@
 
         {{-- Arabic digit conversion + MathJax for math expressions (√ ∫ fractions powers) --}}
         <script>
-            let arabicApplied = false;
+            const _arabicDigits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+            const _arabicSkip   = new Set(['SCRIPT','STYLE','NOSCRIPT','TEXTAREA','INPUT','SELECT','BUTTON','PRE','CODE']);
+            let   _mathJaxReady = false;
 
-            function convertToArabicNumbers(str) {
-                const d = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
-                return str.replace(/[0-9]/g, w => d[+w]);
+            function toArabicDigits(str) {
+                return str.replace(/[0-9]/g, w => _arabicDigits[+w]);
             }
 
-            function applyArabicNumbers() {
-                if (arabicApplied) return;
-                arabicApplied = true;
-                const skip = new Set(['SCRIPT','STYLE','NOSCRIPT','TEXTAREA','INPUT','SELECT','BUTTON','PRE','CODE']);
+            // Convert text nodes inside a subtree; skips MathJax output and form elements
+            function convertSubtree(root) {
                 const walker = document.createTreeWalker(
-                    document.body, NodeFilter.SHOW_TEXT,
+                    root, NodeFilter.SHOW_TEXT,
                     { acceptNode: node => {
                         let el = node.parentElement;
                         while (el) {
-                            if (skip.has(el.tagName) || el.closest('mjx-container')) return NodeFilter.FILTER_REJECT;
+                            if (_arabicSkip.has(el.tagName) || el.closest('mjx-container')) {
+                                return NodeFilter.FILTER_REJECT;
+                            }
                             el = el.parentElement;
                         }
                         return NodeFilter.FILTER_ACCEPT;
@@ -389,8 +390,42 @@
                 const nodes = [];
                 let n;
                 while (n = walker.nextNode()) nodes.push(n);
-                nodes.forEach(n => { n.nodeValue = convertToArabicNumbers(n.nodeValue); });
+                nodes.forEach(n => { n.nodeValue = toArabicDigits(n.nodeValue); });
             }
+
+            // Initial full-page conversion — called after MathJax finishes its first render
+            function applyArabicNumbers() { convertSubtree(document.body); }
+
+            // MutationObserver: handles dynamically added content (AJAX, Livewire, etc.)
+            function startDynamicArabicObserver() {
+                let _mjxBusy = false;
+
+                new MutationObserver(mutations => {
+                    if (_mjxBusy) return;
+
+                    const added = [];
+                    mutations.forEach(m => m.addedNodes.forEach(node => {
+                        if (node.nodeType !== Node.ELEMENT_NODE) return;
+                        const tag = node.tagName || '';
+                        // Ignore nodes created by MathJax itself
+                        if (tag.startsWith('MJX') || node.closest?.('mjx-container')) return;
+                        added.push(node);
+                    }));
+
+                    if (!added.length) return;
+
+                    // Let MathJax render any LaTeX in the new content first, then convert digits
+                    _mjxBusy = true;
+                    const finish = () => { _mjxBusy = false; added.forEach(convertSubtree); };
+
+                    window.MathJax?.typesetPromise
+                        ? MathJax.typesetPromise(added).then(finish).catch(finish)
+                        : finish();
+                }).observe(document.body, { childList: true, subtree: true });
+            }
+
+            // Expose globally so any AJAX callback can trigger conversion on a new element
+            window.convertSubtreeToArabic = convertSubtree;
 
             window.MathJax = {
                 tex: {
@@ -403,7 +438,11 @@
                 startup: {
                     ready() {
                         MathJax.startup.defaultReady();
-                        MathJax.startup.promise.then(() => applyArabicNumbers());
+                        MathJax.startup.promise.then(() => {
+                            _mathJaxReady = true;
+                            applyArabicNumbers();
+                            startDynamicArabicObserver();
+                        });
                     }
                 }
             };
@@ -524,8 +563,10 @@
                     window.lucide.createIcons();
                 }
 
-                // Fallback: if MathJax fails to load, still convert digits after 1.5s
-                setTimeout(applyArabicNumbers, 1500);
+                // Fallback: if MathJax CDN fails to load, still convert digits and start observer
+                setTimeout(() => {
+                    if (!_mathJaxReady) { applyArabicNumbers(); startDynamicArabicObserver(); }
+                }, 2000);
 
                 document.querySelectorAll('[data-lb-tab]').forEach((button) => {
                     button.addEventListener('click', () => {

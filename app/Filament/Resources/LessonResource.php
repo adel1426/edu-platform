@@ -66,6 +66,7 @@ class LessonResource extends Resource
 
                         Forms\Components\RichEditor::make('content')
                             ->label('شرح الدرس')
+                            ->helperText('لكتابة رموز رياضية بصيغة LaTeX: \( \frac{2}{5} \) للكسر ← \frac{2}{5} | \( \sqrt{9} \) للجذر ← \sqrt{9} | \( x^{2} \) للأس ← x^{2} | ضعها بين \( ... \) داخل السطر أو \[ ... \] لسطر مستقل.')
                             ->fileAttachmentsDisk('public')
                             ->fileAttachmentsDirectory('lesson-attachments')
                             ->columnSpanFull(),
