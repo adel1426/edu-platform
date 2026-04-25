@@ -244,6 +244,9 @@
                 color: #2d2640;
             }
 
+            /* ── Heading font weight ── */
+            h1, h2, h3 { font-weight: 900; }
+
             @keyframes fadeIn {
                 from { opacity: 0; transform: translateY(16px); }
                 to { opacity: 1; transform: translateY(0); }
@@ -453,11 +456,12 @@
     </head>
     <body>
         @php
-            $isHomeRoute = request()->routeIs('home');
+            $isHomeRoute    = request()->routeIs('home');
             $isLessonsRoute = request()->routeIs('lessons.*');
-            $isSubjectsRoute = request()->routeIs('subjects.*');
-            $isAdminRoute = str_starts_with(request()->path(), 'admin');
-            $isLoginRoute = request()->routeIs('login');
+            $isSubjectsRoute= request()->routeIs('subjects.*');
+            $isAdminRoute   = str_starts_with(request()->path(), 'admin');
+            $isLoginRoute   = request()->routeIs('login');
+            $isResultsRoute = request()->routeIs('my-results');
         @endphp
 
         <div class="page-shell">
@@ -528,30 +532,39 @@
                 </a>
 
                 @auth
-                    <a href="{{ url('/admin') }}" class="flex flex-col items-center gap-1" style="text-decoration: none">
-                        <div
-                            class="w-12 h-9 rounded-2xl flex items-center justify-center"
-                            style="{{ $isAdminRoute ? 'background: rgba(124, 58, 237, 0.12)' : '' }}"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ $isAdminRoute ? '#7C3AED' : '#94a3b8' }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="8" r="4" />
-                                <path d="M20 21a8 8 0 1 0-16 0" />
-                            </svg>
-                        </div>
-                        <span class="text-[10px] font-bold" style="color: {{ $isAdminRoute ? '#7c3aed' : '#94a3b8' }}">المشرفة</span>
-                    </a>
+                    @if(auth()->user()->is_admin)
+                        {{-- Admin: link to admin panel --}}
+                        <a href="{{ url('/admin') }}" class="flex flex-col items-center gap-1" style="text-decoration: none">
+                            <div class="w-12 h-9 rounded-2xl flex items-center justify-center"
+                                 style="{{ $isAdminRoute ? 'background: rgba(124, 58, 237, 0.12)' : '' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ $isAdminRoute ? '#7C3AED' : '#94a3b8' }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="8" r="4" /><path d="M20 21a8 8 0 1 0-16 0" />
+                                </svg>
+                            </div>
+                            <span class="text-[10px] font-bold" style="color: {{ $isAdminRoute ? '#7c3aed' : '#94a3b8' }}">المشرفة</span>
+                        </a>
+                    @else
+                        {{-- Student: link to my results --}}
+                        <a href="{{ route('my-results') }}" class="flex flex-col items-center gap-1" style="text-decoration: none">
+                            <div class="w-12 h-9 rounded-2xl flex items-center justify-center"
+                                 style="{{ $isResultsRoute ? 'background: rgba(124, 58, 237, 0.12)' : '' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ $isResultsRoute ? '#7C3AED' : '#94a3b8' }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+                                </svg>
+                            </div>
+                            <span class="text-[10px] font-bold" style="color: {{ $isResultsRoute ? '#7c3aed' : '#94a3b8' }}">نتائجي</span>
+                        </a>
+                    @endif
                 @else
+                    {{-- Guest: link to login --}}
                     <a href="{{ route('login') }}" class="flex flex-col items-center gap-1" style="text-decoration: none">
-                        <div
-                            class="w-12 h-9 rounded-2xl flex items-center justify-center"
-                            style="{{ $isLoginRoute ? 'background: rgba(124, 58, 237, 0.12)' : '' }}"
-                        >
+                        <div class="w-12 h-9 rounded-2xl flex items-center justify-center"
+                             style="{{ $isLoginRoute ? 'background: rgba(124, 58, 237, 0.12)' : '' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ $isLoginRoute ? '#7C3AED' : '#94a3b8' }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="8" r="4" />
-                                <path d="M20 21a8 8 0 1 0-16 0" />
+                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
                             </svg>
                         </div>
-                        <span class="text-[10px] font-bold" style="color: {{ $isLoginRoute ? '#7c3aed' : '#94a3b8' }}">المشرفة</span>
+                        <span class="text-[10px] font-bold" style="color: {{ $isLoginRoute ? '#7c3aed' : '#94a3b8' }}">دخول</span>
                     </a>
                 @endauth
             </div>
